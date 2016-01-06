@@ -28,8 +28,6 @@ readFile <- function(filename)
   colnames(A) <- names
   rownames(A) <- names
 
-  A[lower.tri(A, diag=T)] <- 0
-
   A
 }
 
@@ -43,7 +41,7 @@ scoreFun <- function(A, perm)
 
   # distance between two students is equal to:
   #   col.index - row.index - 1 * -weight
-  sum(((t(Ar) - Ar - 1) * -A))
+  sum(((t(Ar) - Ar - 1) * -A)[upper.tri(A, diag=F)])
 }
 
 # plotGraph : adjacency matrix -> plot
