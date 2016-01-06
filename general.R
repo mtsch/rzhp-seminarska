@@ -47,21 +47,25 @@ plotGraph <- function(A, ...)
 {
   require(igraph)
 
+  n <- nrow(A)
+
   # create graph, make sure weights of 0 are treated as edges
   g <- graph_from_adjacency_matrix( A + .1
                                   , weighted=T
                                   , mode="undirected"
                                   , diag=F)
   E(g)$weight <- E(g)$weight - .1
-
-  weights <- E(g)$weight
+  weights     <- E(g)$weight
 
   edge.cols <- c("red", "red", "gray", "green", "green")[weights + 3]
+  layoutFun <- function(i) matrix(c( sin(2*pi*1:n / n)
+                                   , cos(2*pi*1:n / n)), ncol=2)
 
   plot( g
       , edge.label   = weights
       , vertex.color = "gray"
       , edge.color   = edge.cols
       , edge.width   = sapply(weights, function(x) 2 * max(1, abs(x)))
+      , layout       = layoutFun
       , ...)
 }
