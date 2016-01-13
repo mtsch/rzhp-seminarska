@@ -17,7 +17,9 @@ readFile <- function(filename)
   pref <- as.numeric(pref)
 
   # rebuild table with numeric values
-  tbl <- data.frame(pref, lapply(people, as.numeric))
+  nppl <- length(names)
+  tbl  <- data.frame(pref, lapply(people, as.numeric))
+  tbl  <- rbind(tbl, data.frame(pref=rep(0, nppl), V2=1:nppl, V3=1:nppl))
 
   # convert to adjacency matrix
   A <- acast(tbl, V2 ~ V3, value.var = "pref", fill=0)
@@ -31,7 +33,7 @@ readFile <- function(filename)
   A
 }
 
-# scoreFun : upper.tri of adjacency matrix, permutation -> score
+# scoreFun : adjacency matrix, permutation -> score
 scoreFun <- function(A, perm)
 {
   n <- nrow(A)
@@ -41,6 +43,7 @@ scoreFun <- function(A, perm)
 
   # distance between two students is equal to:
   #   col.index - row.index - 1 * -weight
+  #sum((t(Ar) - Ar - 1) * -A) / 2 # (/ 2) = upper.tri(A, diag=F)
   sum(((t(Ar) - Ar - 1) * -A)[upper.tri(A, diag=F)])
 }
 
