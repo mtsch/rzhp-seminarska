@@ -37,13 +37,13 @@ readFile <- function(filename)
 scoreFun <- function(A, perm)
 {
   n <- nrow(A)
-
-  # row indices according to permutation
-  Ar <- matrix(rep(perm, n), nrow=n)
-
+  A <- A[perm, perm]
+  
+  # row indices
+  Ar <- matrix(rep(1:n, n), nrow=n)
+  
   # distance between two students is equal to:
   #   col.index - row.index - 1 * -weight
-  #sum((t(Ar) - Ar - 1) * -A) / 2 # (/ 2) = upper.tri(A, diag=F)
   sum(((t(Ar) - Ar - 1) * -A)[upper.tri(A, diag=F)])
 }
 
