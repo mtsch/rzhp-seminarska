@@ -53,13 +53,28 @@ n4=function(perm){#reverse part of permutation
 	res
 }
 
+combine=function(na,nb){#combine two neighborhoods
+  function(perm){
+    l=length(perm)
+    res=matrix(ncol=l,nrow=0)
+    part=na(perm)
+    for(i in 1:nrow(part)){
+      res=rbind(res,nb(part[i,]))
+    }
+    res
+  }
+}
 
-vnsearch=function(start,obj,neighs){
+vnsearch=function(start,obj,neighs,printsteps=F,printneighs=F){
 	best=start
 	searching=T
+	if(printneighs)
+	  nUsed=rep(0,length(neighs))
 	while(searching){
 		searching=F
 		start=best
+		if(printsteps)
+		  print(start)
 		besti=-1
 		bestobj=obj(start)
 		for(n in 1:length(neighs)){
@@ -74,9 +89,13 @@ vnsearch=function(start,obj,neighs){
 			}
 			if(besti!=-1){
 				searching=T
+				if(printneighs)
+				  nUsed[n]=nUsed[n]+1
 				break
 			}
 		}
 	}
+	if(printneighs)
+	  print(nUsed)
 	best
 }
