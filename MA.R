@@ -1,31 +1,66 @@
 source("general.R")
 source("vnsearch.R")
-
+library(snowfall)
 
 MA <- function(adjmat,                   # Adjacency matrix
                score         = scoreFun, # Score function
-               improveFun    = identity, # Additional optimization
+               selectFun     = rouletteWheelSelect2,
+               improveFun    = id,       # Additional optimization
                crossFun      = orderedX, # Crossover function
                mutateFun     = mutate,   # Mutation function
-               mutation.rate = 0.1,      # Probability of mutation
+               mutation.rate = 0.01,     # Probability of mutation
                init.pop.size = 10000,    # Initial population size
-               n.iter        = 1000,     # Number of iterations
-               n.pool        = 100       # Size of the breeding pool
+               n.iter        = 100,      # Number of iterations
+               n.pool        = 100,      # Size of the breeding pool
+               verbose       = T,        # Verbose?
+               finish.steps  = 1000,
+               finish.neigh  = n3,
+               cores         = 1,        # Number of cores used.
+               ...                       # Arguments to improveFun
                )
 {
-    n   <- nrow(adjmat)
+    if (cores > 1) {
+        sfInit(parallel=T, cpus=cores)
+        sfExport(list=list("adjmat", "score", "improveFun"))
+    }
+
+    n    <- nrow(adjmat)
+    # Overall best
+    best.p <- NA
+    best.f <- 0
     # Initial population - inidividuals are placed in columns.
-    pop <- sapply(1:pop.size, function(.) sample(n))
+    pop  <- sapply(1:init.pop.size, function(.) sample(n))
 
     for (i in 1:n.iter) {
         # Get fitnesses
         fitness  <- apply(pop, 2, score, A=adjmat)
+
+        # Current best
+        c.best.f <- max(fitness)
+        if (c.best.f > best.f) {
+            best.p <- pop[, which.max(fitness)]
+            best.f <- c.best.f
+        }
+
+        # Print status
+        if (verbose) {
+            message(paste0("Iteration ", i, ":"))
+            message(c.best.f)
+        }
+
         # Select breeding pool
-        pool     <- ruletteWheelSelect(pop, fitness, n.pool)
+        pool <- selectFun(pop, fitness, n.pool)
+        # Apply optimization
+        if (cores > 1) {
+            sfExport(list=list("pool"))
+            pool <- sfApply(pool, 2, improveFun, adjmat, score, ...)
+        } else {
+            pool <- apply(pool, 2, improveFun, adjmat, score, ...)
+        }
 
         # Select individuals to breed
-        breed1   <- sample(n.pool, n.pool, replace=T)
-        breed2   <- sample(n.pool, n.pool, replace=T)
+        breed1 <- sample(n.pool, n.pool, replace=T)
+        breed2 <- sample(n.pool, n.pool, replace=T)
 
         # Produce offspring
         children <- lapply(1:n.pool,
@@ -36,16 +71,35 @@ MA <- function(adjmat,                   # Adjacency matrix
         children <- matrix(children[!is.na(children)], ncol=2*n.pool)
 
         # Join children with old population
-        pop      <- cbind(children, pool)
+        pop <- cbind(children, pool)
         # Apply mutation
-        pop      <- apply(pop, 2, mutateFun, mutation.rate)
+        pop <- apply(pop, 2, mutateFun, mutation.rate)
     }
 
     # select best
     fitness <- apply(pop, 2, score, A=adjmat)
 
-    pop[, which.max(fitness)]
+    c.best.f <- max(fitness)
+    if (c.best.f > best.f) {
+        best.p <- pop[, which.max(fitness)]
+        best.f <- c.best.f
+    }
 
+
+    if (verbose)
+        message("Finishing...")
+    # Finish by performing a local search on the result.
+    res <- multiStepLocalSearch(best.p,
+                                adj   = adjmat,
+                                score = score,
+                                neigh = finish.neigh,
+                                steps = finish.steps)
+    message(paste0("Final score: ", score(adjmat, res), "."))
+
+    if (cores > 1)
+        sfStop()
+
+    res
 }
 
 # Check if perm is a valid permutation.
@@ -70,8 +124,8 @@ mutate <- function(perm, mutation.rate)
 }
 
 # Select n individuals from pop
-# ruletteWheelSelect : population, fitness vector, num → population
-ruletteWheelSelect <- function(pop, fitness, n)
+# rouletteWheelSelect : population, fitness vector, num → population
+rouletteWheelSelect1 <- function(pop, fitness, n)
 {
     fitness <- order(fitness)
 
@@ -79,6 +133,22 @@ ruletteWheelSelect <- function(pop, fitness, n)
     is <- findInterval(vs, cumsum(fitness), rightmost.closed=T) + 1
 
     pop[, is]
+}
+
+rouletteWheelSelect2 <- function(pop, fitness, n)
+{
+    fitness <- fitness - min(fitness)
+
+    vs <- runif(n, min=0, max=sum(fitness))
+    is <- findInterval(vs, cumsum(fitness), rightmost.closed=T) + 1
+
+    pop[, is]
+}
+
+# Deterministic tournament selection
+dTournamentSelect <- function(pop, fitness, n)
+{
+    pop[, order(fitness, decreasing=T)][, 1:n]
 }
 
 # Ordered crossover function
@@ -108,3 +178,31 @@ orderedX <- function(perm1, perm2)
     list(child1[!is.na(child1)],
          child2[!is.na(child2)])
 }
+
+# Improve the permutation by performing a single step.
+singleStepLocalSearch <- function(perm, adj, score, neigh)
+{
+    neighs  <- t(neigh(perm))
+    fitness <- apply(neighs, 2, score, A=adj)
+    if (max(fitness) > score(adj, perm))
+        neighs[, which.max(fitness)]
+    else
+        perm
+}
+
+# Improve the permutation by performing a few steps.
+multiStepLocalSearch <- function(perm, adj, score, neigh, steps)
+{
+    for (i in 1:steps) {
+        neighs  <- t(neigh(perm))
+        fitness <- apply(neighs, 2, score, A=adj)
+        if (max(fitness) > score(adj, perm))
+            perm <- neighs[, which.max(fitness)]
+        else
+            return(perm)
+    }
+    perm
+}
+
+# Identity function that takes more than one argument
+id <- function(x, ...) x
