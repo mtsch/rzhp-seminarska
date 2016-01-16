@@ -1,11 +1,12 @@
-# 
-A3 <- readFile("DS3.R")
+source("MA.R")
+
+A3 <- readFile("DS3.csv")
 system.time(res <- MA(A3,
                       n.iter=10,
                       select=dTournamentSelect,
-                      improveFun=multiStepLocalSearch
+                      improveFun=multiStepLocalSearch,
                       steps=100,
-                      neigh=n1
+                      neigh=n3,
+                      cores=2
                       ))
-# Final score: 1972
-# Time:        257.353
+# Final score: ~1972

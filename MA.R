@@ -1,5 +1,6 @@
 source("general.R")
 source("vnsearch.R")
+library(snowfall)
 
 MA <- function(adjmat,                   # Adjacency matrix
                score         = scoreFun, # Score function
@@ -14,9 +15,15 @@ MA <- function(adjmat,                   # Adjacency matrix
                verbose       = T,        # Verbose?
                finish.steps  = 1000,
                finish.neigh  = n3,
+               cores         = 1,        # Number of cores used.
                ...                       # Arguments to improveFun
                )
 {
+    if (cores > 1) {
+        sfInit(parallel=T, cpus=cores)
+        sfExport(list=list("adjmat", "score", "improveFun"))
+    }
+
     n    <- nrow(adjmat)
     # Overall best
     best.p <- NA
@@ -42,13 +49,18 @@ MA <- function(adjmat,                   # Adjacency matrix
         }
 
         # Select breeding pool
-        pool     <- selectFun(pop, fitness, n.pool)
+        pool <- selectFun(pop, fitness, n.pool)
         # Apply optimization
-        pool     <- apply(pool, 2, improveFun, adjmat, score, ...)
+        if (cores > 1) {
+            sfExport(list=list("pool"))
+            pool <- sfApply(pool, 2, improveFun, adjmat, score, ...)
+        } else {
+            pool <- apply(pool, 2, improveFun, adjmat, score, ...)
+        }
 
         # Select individuals to breed
-        breed1   <- sample(n.pool, n.pool, replace=T)
-        breed2   <- sample(n.pool, n.pool, replace=T)
+        breed1 <- sample(n.pool, n.pool, replace=T)
+        breed2 <- sample(n.pool, n.pool, replace=T)
 
         # Produce offspring
         children <- lapply(1:n.pool,
@@ -59,9 +71,9 @@ MA <- function(adjmat,                   # Adjacency matrix
         children <- matrix(children[!is.na(children)], ncol=2*n.pool)
 
         # Join children with old population
-        pop      <- cbind(children, pool)
+        pop <- cbind(children, pool)
         # Apply mutation
-        pop      <- apply(pop, 2, mutateFun, mutation.rate)
+        pop <- apply(pop, 2, mutateFun, mutation.rate)
     }
 
     # select best
@@ -83,6 +95,10 @@ MA <- function(adjmat,                   # Adjacency matrix
                                 neigh = finish.neigh,
                                 steps = finish.steps)
     message(paste0("Final score: ", score(adjmat, res), "."))
+
+    if (cores > 1)
+        sfStop()
+
     res
 }
 
