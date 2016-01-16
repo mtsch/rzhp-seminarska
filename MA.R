@@ -12,6 +12,8 @@ MA <- function(adjmat,                   # Adjacency matrix
                n.iter        = 100,      # Number of iterations
                n.pool        = 100,      # Size of the breeding pool
                verbose       = T,        # Verbose?
+               finish.steps  = 1000,
+               finish.neigh  = n3,
                ...                       # Arguments to improveFun
                )
 {
@@ -71,8 +73,17 @@ MA <- function(adjmat,                   # Adjacency matrix
         best.f <- c.best.f
     }
 
-    message(paste0("Final score: ", best.f, "."))
-    best.p
+
+    if (verbose)
+        message("Finishing...")
+    # Finish by performing a local search on the result.
+    res <- multiStepLocalSearch(best.p,
+                                adj   = adjmat,
+                                score = score,
+                                neigh = finish.neigh,
+                                steps = finish.steps)
+    message(paste0("Final score: ", score(adjmat, res), "."))
+    res
 }
 
 # Check if perm is a valid permutation.
@@ -118,6 +129,12 @@ rouletteWheelSelect2 <- function(pop, fitness, n)
     pop[, is]
 }
 
+# Deterministic tournament selection
+dTournamentSelect <- function(pop, fitness, n)
+{
+    pop[, order(fitness, decreasing=T)][, 1:n]
+}
+
 # Ordered crossover function
 # orderedX : permutation, permutation → permutation list(2)
 orderedX <- function(perm1, perm2)
@@ -155,6 +172,20 @@ singleStepLocalSearch <- function(perm, adj, score, neigh)
         neighs[, which.max(fitness)]
     else
         perm
+}
+
+# Improve the permutation by performing a few steps.
+multiStepLocalSearch <- function(perm, adj, score, neigh, steps)
+{
+    for (i in 1:steps) {
+        neighs  <- t(neigh(perm))
+        fitness <- apply(neighs, 2, score, A=adj)
+        if (max(fitness) > score(adj, perm))
+            perm <- neighs[, which.max(fitness)]
+        else
+            return(perm)
+    }
+    perm
 }
 
 # Identity function that takes more than one argument
