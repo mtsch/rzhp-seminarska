@@ -4,7 +4,7 @@ library(snowfall)
 
 MA <- function(adjmat,                   # Adjacency matrix
                score         = scoreFun, # Score function
-               selectFun     = rouletteWheelSelect2,
+               selectFun     = dSelect,  # Selection function
                improveFun    = id,       # Additional optimization
                crossFun      = orderedX, # Crossover function
                mutateFun     = mutate,   # Mutation function
@@ -13,18 +13,19 @@ MA <- function(adjmat,                   # Adjacency matrix
                n.iter        = 100,      # Number of iterations
                n.pool        = 100,      # Size of the breeding pool
                verbose       = T,        # Verbose?
-               finish.steps  = 1000,
-               finish.neigh  = n3,
+               finish.steps  = 1000,     # Local search steps at the end.
+               finish.neigh  = n3,       # Neighbourhood used at the end.
                cores         = 1,        # Number of cores used.
                ...                       # Arguments to improveFun
                )
 {
+    # Initialize snowfall if needed.
     if (cores > 1) {
         sfInit(parallel=T, cpus=cores)
         sfExport(list=list("adjmat", "score", "improveFun"))
     }
 
-    n    <- nrow(adjmat)
+    n <- nrow(adjmat)
     # Overall best
     best.p <- NA
     best.f <- 0
@@ -76,18 +77,19 @@ MA <- function(adjmat,                   # Adjacency matrix
         pop <- apply(pop, 2, mutateFun, mutation.rate)
     }
 
-    # select best
+    # Select best
     fitness <- apply(pop, 2, score, A=adjmat)
 
+    # Select the overall best specimen.
     c.best.f <- max(fitness)
     if (c.best.f > best.f) {
         best.p <- pop[, which.max(fitness)]
         best.f <- c.best.f
     }
 
-
     if (verbose)
         message("Finishing...")
+
     # Finish by performing a local search on the result.
     res <- multiStepLocalSearch(best.p,
                                 adj   = adjmat,
@@ -96,6 +98,7 @@ MA <- function(adjmat,                   # Adjacency matrix
                                 steps = finish.steps)
     message(paste0("Final score: ", score(adjmat, res), "."))
 
+    # Stop snowfall.
     if (cores > 1)
         sfStop()
 
@@ -146,9 +149,24 @@ rouletteWheelSelect2 <- function(pop, fitness, n)
 }
 
 # Deterministic tournament selection
-dTournamentSelect <- function(pop, fitness, n)
+dSelect <- function(pop, fitness, n)
 {
     pop[, order(fitness, decreasing=T)][, 1:n]
+}
+
+tournamentSelect <- fucntion(pop, fitness, n)
+{
+    fst <- sample(n, replace=T)
+    snd <- sample(n, replace=T)
+
+    fst.filter <- fintess[fst] >= fitness[snd]
+    snd.filter <- fintess[fst] <  fitness[snd]
+
+    selection  <- 1:n
+    selection[fst.filter] <- fst[fst.filter]
+    selection[snd.filter] <- snd[snd.filter]
+
+    selection
 }
 
 # Ordered crossover function
