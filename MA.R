@@ -17,7 +17,7 @@ MA <- function(adjmat,                   # Adjacency matrix
                finish.neigh  = n3,       # Neighbourhood used at the end.
                cores         = 1,        # Number of cores used.
                ...                       # Arguments to improveFun
-               )
+               )                         # Returns permutation
 {
     # Initialize snowfall if needed.
     if (cores > 1) {
@@ -127,7 +127,9 @@ mutate <- function(perm, mutation.rate)
 }
 
 # Select n individuals from pop
-# rouletteWheelSelect : population, fitness vector, num → population
+# xyzSelect : population, fitnesses, n.pool → population
+
+# Roulette wheel selection based on ranks
 rouletteWheelSelect1 <- function(pop, fitness, n)
 {
     fitness <- order(fitness)
@@ -138,6 +140,7 @@ rouletteWheelSelect1 <- function(pop, fitness, n)
     pop[, is]
 }
 
+# Roulette wheel selection with the minimum fitness set to 0
 rouletteWheelSelect2 <- function(pop, fitness, n)
 {
     fitness <- fitness - min(fitness)
@@ -148,25 +151,22 @@ rouletteWheelSelect2 <- function(pop, fitness, n)
     pop[, is]
 }
 
-# Deterministic tournament selection
+# Deterministic selection
 dSelect <- function(pop, fitness, n)
 {
     pop[, order(fitness, decreasing=T)][, 1:n]
 }
 
-tournamentSelect <- fucntion(pop, fitness, n)
+# Deterministic tournament selection
+tournamentSelect <- function(pop, fitness, n)
 {
     fst <- sample(n, replace=T)
     snd <- sample(n, replace=T)
 
-    fst.filter <- fintess[fst] >= fitness[snd]
-    snd.filter <- fintess[fst] <  fitness[snd]
+    fst.filter <- fitness[fst] >= fitness[snd]
+    snd.filter <- fitness[fst] <  fitness[snd]
 
-    selection  <- 1:n
-    selection[fst.filter] <- fst[fst.filter]
-    selection[snd.filter] <- snd[snd.filter]
-
-    selection
+    pop[, c(fst[fst.filter], snd[snd.filter])]
 }
 
 # Ordered crossover function
@@ -197,19 +197,9 @@ orderedX <- function(perm1, perm2)
          child2[!is.na(child2)])
 }
 
-# Improve the permutation by performing a single step.
-singleStepLocalSearch <- function(perm, adj, score, neigh)
-{
-    neighs  <- t(neigh(perm))
-    fitness <- apply(neighs, 2, score, A=adj)
-    if (max(fitness) > score(adj, perm))
-        neighs[, which.max(fitness)]
-    else
-        perm
-}
-
 # Improve the permutation by performing a few steps.
-multiStepLocalSearch <- function(perm, adj, score, neigh, steps)
+# localSearch : permutation, mat, fun, fun, number → permutation
+localSearch <- function(perm, adj, score, neigh, steps)
 {
     for (i in 1:steps) {
         neighs  <- t(neigh(perm))
@@ -222,5 +212,6 @@ multiStepLocalSearch <- function(perm, adj, score, neigh, steps)
     perm
 }
 
-# Identity function that takes more than one argument
+# Identity function that can take more than one argument
+# id : any, ... → any
 id <- function(x, ...) x
