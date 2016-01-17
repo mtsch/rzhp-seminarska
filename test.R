@@ -17,9 +17,9 @@ while((proc.time()-t)["elapsed"]<1000){
   #res=vnsearch(start,obj,list(n1,n2,n3,n4,combine(n1,n1),combine(n2,n2),combine(n1,n2),combine(n1,n3),combine(n1,n4),combine(n2,n4),combine(n2,n3)),printneighs = T)
   res=vnsearch(start,obj,list(n3),printneighs = F)
   #res
-  o=obj(res)
-  print(o)
-  print((proc.time()-t)["elapsed"])
+  #o=obj(res)
+  #print(o)
+  #print((proc.time()-t)["elapsed"])
   end.res=rbind(end.res,res)
   end.obj=c(end.obj,o)
 }
