@@ -63,21 +63,25 @@ Vse algoritme sva implementirala sama.
 
 ## Local search in VNS
 
-Ker je local search poseben primer VNS, sva ta dva algoritma razvijala
-vzporedno.  
-Preizkusila sva naslednje soseščine:  
+Algoritem local search deluje tako, da za dano permutacijo pregleda njeno
+okolico, iz nje izbere najboljšo permutacijo in postopek ponavlja, dokler ni
+trenutna permutacija najboljša v svoji okolici. VNS deluje podobno, le da v
+vsakem koraku pregleda več kot eno okolico. Pri obeh algoritmih je najbol
+pomembna pravilna izbira okolice.  
+
+Preizkusila sva naslednje vrste okolic:  
 
 1. Zamenjaj dva soseda.
 2. Razdeli permutacijo na dva dela in jih zamenjaj.
 3. Zamenjaj poljubna dva elementa v permutaciji.
 4. Izberi del permutacije in v njem obrni vrstni red.
 
-Implementirala sva tudi funkcijo, ki združuje dve soseščini. To stori tako, da
-vrne permutacije, ki so v drugi soseščini permutacijam prve soseščine.  
+Implementirala sva tudi funkcijo, ki združuje dve okolici To stori tako, da
+vrne permutacije, ki so v drugi okolici permutacijam prve okolice  
 
-Prvi dve soseščini sta manjši od drugih dveh, saj pri vhodni permutaciji
-velikosti $n$ vrneta $n$ sosedov, drugi dve pa $n^2$. Zaradi pre velikih okolic
-teh dveh nisva kombinirala z ostalimi.
+Prvi dve okolici sta manjši od drugih dveh, saj pri vhodni permutaciji velikosti
+$n$ vrneta $n$ sosedov, drugi dve pa $n^2$. Zaradi pre velikih okolic teh dveh
+nisva kombinirala z ostalimi.
 Najboljša okolica je bila tretja, najslabša, druga pa je bila skoraj neuporabna.
 Algoritme sva testirala tako, da sva jim dala fiksno količino časa jih z
 naključnimi začetnimi pogoji zaganjala dokler se čas ni iztekel. Najboljši
@@ -142,8 +146,8 @@ najhitrejši, tako da v istem času opravi znatno večjo količino iskanj.
 
 Podobne rezultate kot local search je dal tudi MA, le da je računanje trajalo
 dlje in da je bilo potrebno vložiti več dela v pravilne nastavitve parametrov.
-MA je imel tudi problem, da imajo rezultati, ki jih daje visoko variabilnost,
-sploh če osebke izbiramo po roulette wheel algoritmu.  
+MA ima tudi problem, da imajo rezultati, ki jih daje visoko variabilnost, sploh
+če osebke izbiramo po roulette wheel algoritmu.  
 
 Najslabše rezultate je dal algoritem VNS, verjetno zato, ker uporaba različnih
 okolic ni prinesla tako velike izboljšave, kljub temu pa rezultat algoritma ni
