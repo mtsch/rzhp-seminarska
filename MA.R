@@ -91,11 +91,11 @@ MA <- function(adjmat,                   # Adjacency matrix
         message("Finishing...")
 
     # Finish by performing a local search on the result.
-    res <- multiStepLocalSearch(best.p,
-                                adj   = adjmat,
-                                score = score,
-                                neigh = finish.neigh,
-                                steps = finish.steps)
+    res <- localSearch(best.p,
+                       adj   = adjmat,
+                       score = score,
+                       neigh = finish.neigh,
+                       steps = finish.steps)
     message(paste0("Final score: ", score(adjmat, res), "."))
 
     # Stop snowfall.
@@ -167,6 +167,16 @@ tournamentSelect <- function(pop, fitness, n)
     snd.filter <- fitness[fst] <  fitness[snd]
 
     pop[, c(fst[fst.filter], snd[snd.filter])]
+}
+
+# Pick n/4 best, n/4 by roulette and n/2 by tournament select.
+hybridSelect <- function(pop, fitness, n)
+{
+  h  <- round(n/2)
+  hh <- round(h/2)
+  cbind(dSelect(pop, fitness, hh),
+        rouletteWheelSelect1(pop, fitness, hh),
+        tournamentSelect(pop, fitness, h))
 }
 
 # Ordered crossover function

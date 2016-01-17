@@ -105,9 +105,13 @@ izbere tiste osebke, ki bojo šli naprej:
 3. Determinističen tournament selection: Naključno izbira pare osebkov iz poola
    in izbere tistega, ki je boljši.
 4. Izbira n najboljši osebkov iz populacije.
+5. Kombinacija 1, 3 in 4.: Polovica osebkov se izbere po točki 3, in po četrtina
+   po točkah 1 in 4.
 
-Najbolj sta se obnesla 3. in 4., saj sta prva dva generirala preveč naključne
-populacije.  
+Prva dva sta generirala preveč naključne populacije, zato nista bila uporabna.
+Peta metoda je bila najboljša, saj zagotavlja, da najboljši osebki preživijo, a
+še vedno dopušča dovolj raznolikosti in da tudi slabšim osebkom možnost za
+preživetje.
 
 V drugem koraku se na vseh osebkih v izbrani populaciji izvede izbrani
 optimizacijski algoritem. Tu sva v glavnem uporabljala local search z omejenim
