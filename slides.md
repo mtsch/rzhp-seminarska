@@ -5,6 +5,12 @@
 * Try to find optimal permutation
 * Problem is hard - $O(n!)$
 
+# Methods
+
+* Classic local search
+* Variable Neighbourhood Search
+* Memetic algorithm
+
 # Local Search and VNS
 
 * Local search is a special case of VNS
@@ -38,7 +44,7 @@ Based on a simple genetic algorithm.
 
 Additional improvements:
 
-* Local search after selection
+* Local search with limited number of steps after selection
 * Local search before returning the result
 
 # Results on DS3.csv
@@ -67,5 +73,3 @@ MA works well, but is very slow and sometimes unpredictable.
 * Replacing VNS with a different algorithm?
 
 # Questions
-
-????
