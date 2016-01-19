@@ -1,12 +1,15 @@
-# Introduction
+# Problem
 
-* ????
+* Dance line
+* Some dancers want to be close, others apart
+* Try to find optimal permutation
+* Problem is hard - $O(n!)$
 
 # Local Search and VNS
 
 * Local search is a special case of VNS
 * Multiple restarts
-* ????
+* Tend to get stuck in local optimum
 
 # Local Search and VNS
 
@@ -16,6 +19,7 @@ Neighbourhoods used:
 * Split the permutation into two parts and swap them
 * Swap two elements in the permutation
 * Choose a part of the permutation and reverse it
+* Combinations of above
 
 # Memetic Algorithm
 
@@ -59,6 +63,7 @@ MA works well, but is very slow and sometimes unpredictable.
 
 * Faster language?
 * More careful parameter selection for MA?
+* Finding some other neighborhood?
 * Replacing VNS with a different algorithm?
 
 # Questions

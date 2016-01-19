@@ -58,30 +58,30 @@ kvaliteto razporeditve. Funkcija za točkovanje izgleda takole:
 Za metodi, ki jih bova uporabila sva si izbrala variable neighbourhood search
 (VNS) in memetic algorithm (MA). Za VNS sva se odločila zato, ker za naš
 problem obstaja veliko možnih soseščin. Za MA sva se odločila, ker se nama je
-algoritem zdel zanimiv in sva ga hotela preizkusiti.  
+algoritem zdel zanimiv in sva ga hotela preizkusiti.
 Vse algoritme sva implementirala sama.
 
 ## Local search in VNS
 
 Algoritem local search deluje tako, da za dano permutacijo pregleda njeno
 okolico, iz nje izbere najboljšo permutacijo in postopek ponavlja, dokler ni
-trenutna permutacija najboljša v svoji okolici. VNS deluje podobno, le da v
-vsakem koraku pregleda več kot eno okolico. Pri obeh algoritmih je najbol
-pomembna pravilna izbira okolice.  
+trenutna permutacija najboljša v svoji okolici. VNS deluje podobno, le da če ne
+najde boljše permutacije pregleda več okolic. Pri obeh algoritmih je zelo
+pomembna pravilna izbira okolice.
 
-Preizkusila sva naslednje vrste okolic:  
+Preizkusila sva naslednje okolice:
 
 1. Zamenjaj dva soseda.
 2. Razdeli permutacijo na dva dela in jih zamenjaj.
 3. Zamenjaj poljubna dva elementa v permutaciji.
-4. Izberi del permutacije in v njem obrni vrstni red.
+4. Izberi del permutacije in v njem obrni vrstni red elementov.
 
-Implementirala sva tudi funkcijo, ki združuje dve okolici To stori tako, da
-vrne permutacije, ki so v drugi okolici permutacijam prve okolice  
+Implementirala sva tudi funkcijo, ki združuje dve okolici. To stori tako, da
+vrne permutacije, ki so v drugi okolici sosednje permutacijam, ki jih vrne prva okolica
 
 Prvi dve okolici sta manjši od drugih dveh, saj pri vhodni permutaciji velikosti
-$n$ vrneta $n$ sosedov, drugi dve pa $n^2$. Zaradi pre velikih okolic teh dveh
-nisva kombinirala med sabo.
+$n$ vrneta $n$ sosedov, drugi dve pa $n^2$. Zaradi velikosti zadnjih dveh okolic 
+nisva mogla kombinirati med sabo.
 Najboljša okolica je bila tretja, najslabša, druga pa je bila skoraj neuporabna.
 Kombinirane okolice se tudi niso obnesle preveč dobro, saj so bile velike in počasne.
 Algoritme sva testirala tako, da sva jim dala fiksno količino časa jih z
@@ -102,13 +102,13 @@ izbere tiste osebke, ki bojo šli naprej:
 2. Roulette wheel selection s centriranimi vrednostmi: Vsak osebek je izbran z
    verjetnostjo, ki je odvisna od njegove kvalitete. Zaradi možnih negativnih
    vrednosti kvalitete, se na začetku od vseh kvalitet odšteje minimalna.
-3. Determinističen tournament selection: Naključno izbira pare osebkov iz poola
+3. Deterministični tournament selection: Naključno izbira pare osebkov iz populacije
    in izbere tistega, ki je boljši.
 4. Izbira n najboljši osebkov iz populacije.
-5. Kombinacija 1, 3 in 4.: Polovica osebkov se izbere po točki 3, in po četrtina
+5. Kombinacija 1, 3 in 4: Polovica osebkov se izbere po točki 3, in po četrtina
    po točkah 1 in 4.
 
-Prva dva sta generirala preveč naključne populacije, zato nista bila uporabna.
+Prva dva sta generirala preveč naključne populacije, zato se nista izkazala kot uporabna.
 Peta metoda je bila najboljša, saj zagotavlja, da najboljši osebki preživijo, a
 še vedno dopušča dovolj raznolikosti in da tudi slabšim osebkom možnost za
 preživetje.
@@ -134,20 +134,20 @@ izvajanjem naletel. Na koncu na to permutacijo še dodatno optimizira z local
 searchom in rezultat vrne.
 
 V praksi je algoritem najbolje deloval z majhnim številom iteracij (okrog 10),
-z vmesno optimizacijo s 100 koraki, izbiro osebkov z metodo "tournaments
-selectionom", ali pa "izberi n najboljših" in visoko verjetnostjo za mutacije
+z vmesno optimizacijo s 100 koraki, izbiro osebkov z metodo "tournament
+selection", ali pa "izberi n najboljših" in visoko verjetnostjo za mutacije
 (okrog 0.1).
 
 # Rezultati
 
 Pri prvih dveh setih podatkov so vsi algoritmi dobili iste rezultate. Ker so
 iste rezultate dobili tudi algoritmi, ki so jih uporabljali ostali, sklepava,
-da gre za optimalno rešitev.  
+da gre za optimalno rešitev.
 
 Pri tretjem setu podatkov sva presenetljivo najboljše rezultate dobila s
 klasičnim local search algoritmom z veliko količino ponovnih zagonov. Razlog za
 to je verjetno dejstvo, da je ta algoritem najpreprostejši in zato tudi
-najhitrejši, tako da v istem času opravi znatno večjo količino iskanj.  
+najhitrejši, tako da v istem času opravi znatno večjo količino iskanj.
 
 Podobne rezultate kot local search je dal tudi MA, le da je računanje trajalo
 dlje in da je bilo potrebno vložiti več dela v pravilne nastavitve parametrov.
@@ -155,8 +155,8 @@ MA ima tudi problem, da imajo rezultati, ki jih daje visoko variabilnost, sploh
 če osebke izbiramo po roulette wheel algoritmu.  
 
 Najslabše rezultate je dal algoritem VNS, verjetno zato, ker uporaba različnih
-okolic ni prinesla tako velike izboljšave, kljub temu pa rezultat algoritma ni
-bil slab.
+okolic ni prinesla tako velike izboljšave, je pa zelo povačala čas izvajanja,
+kljub temu pa rezultat algoritma ni bil slab.
 
 # Zaključek
 
